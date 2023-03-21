@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="7.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\MyCompany.Store.Core.Domain\MyCompany.Store.Core.Domain.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Mediator\Mediator.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\MyCompany.Store.Infrastructure.Web.Essentials\MyCompany.Store.Infrastructure.Web.Essentials.csproj" />
+  </ItemGroup>
+
+</Project>
