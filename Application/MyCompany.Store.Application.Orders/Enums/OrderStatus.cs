@@ -4,6 +4,7 @@
     {
         Confirm = 1,
         Delivery = 2,
-        Cancel = 3 
+        Cancel = 3,
+        New = 4,
     }
 }

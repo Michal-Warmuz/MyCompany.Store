@@ -5,6 +5,7 @@ using MyCompany.Store.API.Controllers.Base;
 using MyCompany.Store.Application.Orders.Commands.CreateOrder;
 using MyCompany.Store.Application.Orders.Commands.EditOrder;
 using MyCompany.Store.Application.Orders.Commands.RemoveOrder;
+using MyCompany.Store.Application.Orders.Enums;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails;
@@ -52,9 +53,9 @@ namespace MyCompany.Store.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(QueryResult<IEnumerable<GetAllOrdersDto>>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetAllOrders()
+        public async Task<IActionResult> GetAllOrders(int page, int perPage, DateTime? createdDate, OrderStatus? status)
         {
-            return HandleServiceResult(await _queryDispatcher.Dispatch<GetAllOrdersQuery, QueryResult<IEnumerable<GetAllOrdersDto>>>(new GetAllOrdersQuery(), CancellationToken.None));
+            return HandleServiceResult(await _queryDispatcher.Dispatch<GetAllOrdersQuery, QueryResult<IEnumerable<GetAllOrdersDto>>>(new GetAllOrdersQuery(page, perPage, createdDate, status), CancellationToken.None));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Mediator.Queries;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
+using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
 using MyCompany.Store.Infrastructure.Web.Essentials.Enums;
 using MyCompany.Store.Infrastructure.Web.Essentials.Queries;
@@ -17,23 +18,34 @@ namespace MyCompany.Store.Application.Orders.Queries.GetAllOrders
 
         public async Task<QueryResult<IEnumerable<GetAllOrdersDto>>> Handle(GetAllOrdersQuery query, CancellationToken cancellation)
         {
-            var orders = await _orderRepository.GetAllAsync();
+            OrderStatus status = null;
 
-            var result = orders.Select(order => new GetAllOrdersDto()
+            switch (query.Status)
             {
-                Status = order.GetOrderStatus(),
-                AdditionalInfo = order.GetAdditionalInfo(),
-                ClientName = order.GetClientName(),
-                CreatedDate = order.GetCreatedDate(),
-                OrderLines = order.OrderLines.Select(x => new GetAllOrderLinesDto()
-                {
-                    Price = x.GetPriceValue(),
-                    ProductName = x.GetProductName(),
-                }),
-                TotalPrice = order.GetOrderPirce()
-            });
+                case Enums.OrderStatus.Delivery: status = OrderStatus.Delivery; break;
+                case Enums.OrderStatus.Confirm: status = OrderStatus.Confirm; break;
+                case Enums.OrderStatus.Cancel: status = OrderStatus.Cancel; break;
+                case Enums.OrderStatus.New: status = OrderStatus.New; break;
+                default:
+                    break;
+            }
 
-            return new QueryResult<IEnumerable<GetAllOrdersDto>> (ResponseStatus.Ok, result);
+            var orders = await _orderRepository.GetAllAsync(query.Page, query.PerPage, query.CreatedDate, status,
+                order => new GetAllOrdersDto()
+                {
+                    Status = order.GetOrderStatus(),
+                    AdditionalInfo = order.GetAdditionalInfo(),
+                    ClientName = order.GetClientName(),
+                    CreatedDate = order.GetCreatedDate(),
+                    OrderLines = order.OrderLines.Select(x => new GetAllOrderLinesDto()
+                    {
+                        Price = x.GetPriceValue(),
+                        ProductName = x.GetProductName(),
+                    }),
+                    TotalPrice = order.GetOrderPirce()
+                });
+
+            return new QueryResult<IEnumerable<GetAllOrdersDto>> (ResponseStatus.Ok, orders);
         }
     }
 }

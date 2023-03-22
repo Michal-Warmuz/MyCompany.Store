@@ -18,23 +18,21 @@ namespace MyCompany.Store.Application.Orders.Queries.GetOrderDetails
 
         public async Task<QueryResult<GetOrderDetailsDto>> Handle(GetOrderDetailsQuery query, CancellationToken cancellation)
         {
-            var order = await _orderRepository.GetAsync(new OrderId(query.OrderId));
-
-            var result = new GetOrderDetailsDto()
+            var order = await _orderRepository.GetAsync(new OrderId(query.OrderId), order => new GetOrderDetailsDto()
             {
                 Status = order.GetOrderStatus(),
                 AdditionalInfo = order.GetAdditionalInfo(),
                 ClientName = order.GetClientName(),
                 CreatedDate = order.GetCreatedDate(),
-                OrderLines = order.OrderLines.Select(x=> new GetOrderLineDetailsDto()
+                OrderLines = order.OrderLines.Select(x => new GetOrderLineDetailsDto()
                 {
                     Price = x.GetPriceValue(),
                     ProductName = x.GetProductName(),
                 }),
                 TotalPrice = order.GetOrderPirce()
-            };
+            }); 
 
-            return new QueryResult<GetOrderDetailsDto>(ResponseStatus.Ok, result);
+            return new QueryResult<GetOrderDetailsDto>(ResponseStatus.Ok, order);
         }
     }
 }

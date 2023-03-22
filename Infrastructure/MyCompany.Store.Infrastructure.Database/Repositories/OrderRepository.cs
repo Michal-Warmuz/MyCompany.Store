@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
+using System.Linq.Expressions;
 
 namespace MyCompany.Store.Infrastructure.Database.Repositories
 {
@@ -23,12 +24,38 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<IReadOnlyList<Order>> GetAllAsync()
+        public async Task<IReadOnlyList<Order>> GetAllAsync(int page, int perPage)
         {
             return await _context.Orders
+                        .Skip((page - 1) * perPage)
+                        .Take(perPage)
                         .AsNoTracking()
                         .Include(x => x.OrderLines)
                         .ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<TType>> GetAllAsync<TType>(int page, int perPage, DateTime? createdDate, OrderStatus? status,  Expression<Func<Order, TType>> select) where TType : class
+        {
+
+            var query = _context.Orders
+                        .Skip((page - 1) * perPage)
+                        .Take(perPage)
+                        .AsNoTracking()
+                        .Include(x => x.OrderLines)
+                        .AsQueryable();
+
+            if(createdDate.HasValue)
+            {
+                query = query.Where(x => x.GetCreatedDate() == createdDate);
+            }
+
+            if(status != null)
+            {
+                query = query.Where(x => x.GetOrderStatus() == status.Value);
+            }
+
+
+            return await query.Select(select).ToListAsync();
         }
 
         public async Task<Order> GetAsync(OrderId orderId)
@@ -38,6 +65,16 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
                 .Where(x=>x.Id == orderId)
                 .Include(x=>x.OrderLines)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<TType> GetAsync<TType>(OrderId orderId, Expression<Func<Order, TType>> select) where TType : class
+        {
+            return await _context.Orders
+                        .AsNoTracking()
+                        .Where(x => x.Id == orderId)
+                        .Include(x => x.OrderLines)
+                        .Select(select)
+                        .FirstOrDefaultAsync();
         }
 
         public void Remove(Order order)
