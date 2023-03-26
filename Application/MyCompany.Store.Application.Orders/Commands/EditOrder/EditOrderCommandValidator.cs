@@ -9,9 +9,6 @@ namespace MyCompany.Store.Application.Orders.Commands.EditOrder
             RuleFor(x => x.ClientName)
                 .NotEmpty().NotNull().WithMessage("ClientName is required");
 
-            RuleFor(x => x.AdditionalInfo)
-                .NotEmpty().NotNull().WithMessage("AdditionalInfo is required");
-
             RuleFor(x => x.Status)
                 .NotNull().WithMessage("Status is required");
         }
