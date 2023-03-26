@@ -7,31 +7,31 @@
 @inject DialogService dialogService
 
 
-@if (!string.IsNullOrEmpty(ErrorMessage))
+@if (!string.IsNullOrEmpty(errorMessage))
 {
-    <DisplayError ErrorMessage="@ErrorMessage" />
+    <DisplayError ErrorMessage="@errorMessage" />
 }
 else
 {
     <div class="row">
         <div>
             <div>
-                <span>Klient: <b>@Order?.ClientName</b></span>
+                <span>Klient: <b>@order?.ClientName</b></span>
             </div>
             <div>
-                <span>Data utworzenia: <b>@Order?.CreatedDate</b></span>
+                <span>Data utworzenia: <b>@order?.CreatedDate</b></span>
             </div>
             <div>
-                <span>Dodatkowe informacje: <b>@Order?.AdditionalInfo</b></span>
+                <span>Dodatkowe informacje: <b>@order?.AdditionalInfo</b></span>
             </div>
             <div>
-                <span>Całkowita cena: <b>@Order?.TotalPrice</b></span>
+                <span>Całkowita cena: <b>@order?.TotalPrice</b></span>
             </div>
         </div>
     </div>
     <div class="row my-4">
         <div class="col-md-12">
-            <RadzenDataGrid Data="@Order?.OrderLines" TItem="OrderLinesDetailsModel" ColumnWidth="200px" Class="mt-3">
+            <RadzenDataGrid Data="@order?.OrderLines" TItem="OrderLinesDetailsModel" ColumnWidth="200px" Class="mt-3">
                 <Columns>
                     <RadzenDataGridColumn TItem="OrderLinesDetailsModel" Property="ProductName" Title="Produkt" />
                     <RadzenDataGridColumn TItem="OrderLinesDetailsModel" Property="Price" Title="Cena" />
@@ -50,8 +50,8 @@ else
     public long OrderId { get; set; }
 
 
-    private string ErrorMessage { get; set; }
-    private OrderDetailsModel Order { get; set; }
+    string errorMessage;
+    OrderDetailsModel order;
 
 
     protected override async Task OnInitializedAsync()
@@ -59,15 +59,15 @@ else
         await base.OnInitializedAsync();
 
         if (OrderId == 0)
-            ErrorMessage = "Błędny parametru numeru zamówienia";
+            errorMessage = "Błędny parametru numeru zamówienia";
 
         try
         {
-            Order = await orderService.GetAsync(OrderId);
+            order = await orderService.GetAsync(OrderId);
         }
         catch (Exception e)
         {
-            ErrorMessage = e.Message;
+            errorMessage = e.Message;
         }
     }
 }

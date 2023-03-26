@@ -11,8 +11,8 @@ namespace MyCompany.Store.Core.Domain.Orders.Rules
             _status = status;
         }
 
-        public string Message => $"Nie możemy edytować zamówienia gdy status zamówienia to {OrderStatus.New}";
+        public string Message => $"Nie możemy edytować zamówienia gdy status zamówienia jest różnie niż {OrderStatus.New}";
 
-        public bool IsBroken() => _status.Equals(OrderStatus.New);
+        public bool IsBroken() => !_status.Equals(OrderStatus.New);
     }
 }

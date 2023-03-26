@@ -33,24 +33,21 @@ namespace MyCompany.Store.SPA.Services
 
         public async Task<QueryResult<IEnumerable<OrderListModel>>> GetAllOrdersAsync(int page, int perPage = 10, OrderStatus? status = null, DateTime? createdDate = null)
 		{
-            var url = $"/api/Orders?page={page}&perPage={perPage}";
 
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(url);
+            StringBuilder url = new StringBuilder($"/api/Orders?page={page}&perPage={perPage}");
 
             if(createdDate.HasValue)
             {
-                sb.Append($"&createdDate={createdDate.Value.ToString("yyyy-MM-dd")}");
+                url.Append($"&createdDate={createdDate.Value.ToString("yyyy-MM-dd")}");
             }
 
             if(status.HasValue)
             {
                 var statusName = status.ToString();
-                sb.Append($"&status={statusName}");
+                url.Append($"&status={statusName}");
             }
 
-            var response = await _httpClient.GetAsync(url);
+            var response = await _httpClient.GetAsync(url.ToString());
 
             var result = await
                 response.Content.ReadFromJsonAsync<QueryResult<IEnumerable<OrderListModel>>>();
@@ -74,7 +71,7 @@ namespace MyCompany.Store.SPA.Services
                 throw new Exception(result.Error);
         }
 
-        public async Task AddAsync(OrderFormsModel order)
+        public async Task AddAsync(OrderAddFormModel order)
         {
 
             var jsonOrder = JsonSerializer.Serialize(order);
@@ -84,6 +81,23 @@ namespace MyCompany.Store.SPA.Services
             var response = await _httpClient.PostAsync("/api/Orders/", content);
 
             if(!response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<CommandResult>();
+
+                if (!string.IsNullOrEmpty(result.Error))
+                    throw new Exception(result.Error);
+            }
+        }
+
+        public async Task UpdateAsync(long orderId, OrderEditFormModel order)
+        {
+            var jsonOrder = JsonSerializer.Serialize(order);
+
+            var content = new StringContent(jsonOrder, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"/api/Orders/{orderId}", content);
+
+            if (!response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<CommandResult>();
 

@@ -7,15 +7,15 @@
 @inject IOrderService orderService;
 @inject DialogService dialogService;
 
-@if(!string.IsNullOrEmpty(ErrorMessage))
+@if(!string.IsNullOrEmpty(errorMessage))
 {
-    <DisplayError ErrorMessage="@ErrorMessage" />
+    <DisplayError ErrorMessage="@errorMessage" />
 }
 else
 {
     <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" class="mt-2 mb-4" Click="@AddOrderAsync" Text="Dodaj nowe zamówienie" />
 
-    <RadzenDataGrid @ref="ordersGrid" KeyProperty="OrderId" FilterMode="FilterMode.Simple" AllowFiltering="true" IsLoading="@IsLoading" Count="@DataCount" Data="@Orders" LoadData="@LoadData" AllowPaging="true" PageSize="@PerPage" PagerHorizontalAlign="HorizontalAlign.Center">
+    <RadzenDataGrid @ref="ordersGrid" KeyProperty="OrderId" FilterMode="FilterMode.Simple" AllowFiltering="true" IsLoading="@isLoading" Count="@dataCount" Data="@orders" LoadData="@LoadData" AllowPaging="true" PageSize="@perPage" PagerHorizontalAlign="HorizontalAlign.Center">
         <Columns>
             <RadzenDataGridColumn TItem="OrderListModel" Filterable="false" Property="ClientName" Title="Klient" />
             <RadzenDataGridColumn TItem="OrderListModel" Property="CreatedDate" Title="Data utworzenia" />
@@ -36,6 +36,10 @@ else
                     <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="info" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => GetOrderAsync(order.OrderId))" @onclick:stopPropagation="true">
                     </RadzenButton>
 
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditOrderAsync(order.OrderId))"
+                              @onclick:stopPropagation="true" Disabled="@(order.Status != "New")">
+                    </RadzenButton>
+
                     <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => RemoveOrderAsync(order.OrderId))" Disabled="@(order.Status != "New")" @onclick:stopPropagation="true">
                     </RadzenButton>
                 </Template>
@@ -50,21 +54,16 @@ else
 
     RadzenDataGrid<OrderListModel> ordersGrid;
 
-    protected string ErrorMessage { get; set; }
-    protected bool IsLoading { get; set; }
-    protected int DataCount { get; set; }
-    protected IEnumerable<OrderListModel> Orders { get; set; }
-
+    string errorMessage;
+    bool isLoading;
+    int dataCount;
+    IEnumerable<OrderListModel> orders;
     OrderStatus? currentOrderStatus;
-
-    FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
-    LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
-
-    protected int PerPage = 10;
+    int perPage = 10;
 
     async Task LoadData(LoadDataArgs args)
     {
-        IsLoading = true;
+        isLoading = true;
 
         var createDateFilter = args.Filters.FirstOrDefault(x => x.Property == "CreatedDate");
 
@@ -80,22 +79,22 @@ else
             var page = ordersGrid.CurrentPage + 1;
 
 
-            var ordersDb = await orderService.GetAllOrdersAsync(page, PerPage, currentOrderStatus, createdDate);
+            var ordersDb = await orderService.GetAllOrdersAsync(page, perPage, currentOrderStatus, createdDate);
 
-            Orders = ordersDb.Payload;
-            DataCount = ordersDb.Count;
+            orders = ordersDb.Payload;
+            dataCount = ordersDb.Count;
         }
         catch (Exception e)
         {
-            ErrorMessage = e.Message;
+            errorMessage = e.Message;
         }
 
-        IsLoading = false;
+        isLoading = false;
     }
 
     async Task AddOrderAsync()
     {
-        await dialogService.OpenAsync<AddEditOrder>(
+        await dialogService.OpenAsync<AddOrder>(
            $"Dodanie zamówienia",
            new Dictionary<string, object>(),
            new DialogOptions() { Width = "700px", Height = "512px", Resizable = false, Draggable = false }
@@ -113,6 +112,17 @@ else
         );
     }
 
+    async Task EditOrderAsync(long orderId)
+    {
+        await dialogService.OpenAsync<EditOrder>(
+               $"Edycja zamówienia: {orderId}",
+               new Dictionary<string, object>() { { "orderId", orderId } },
+               new DialogOptions() { Width = "700px", Height = "512px", Resizable = false, Draggable = false }
+        );
+
+        await ordersGrid.Reload();
+    }
+
     async Task RemoveOrderAsync(long orderId)
     {
         try
@@ -123,7 +133,7 @@ else
         }
         catch(Exception e)
         {
-            ErrorMessage = e.Message;
+            errorMessage = e.Message;
         }
     }
 }

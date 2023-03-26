@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Mediator.Commands;
-using MyCompany.Store.Application.Orders.Commands.CreateOrder;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
 using MyCompany.Store.Core.Domain.SeedWork;

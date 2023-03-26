@@ -1,0 +1,217 @@
+﻿@using MyCompany.Store.SPA.Enums;
+@using MyCompany.Store.SPA.Models;
+@using MyCompany.Store.SPA.Services.Contracts;
+
+@inject IOrderService orderService;
+@inject DialogService dialogService;
+<style>
+    .row {
+        margin-bottom: 16px;
+    }
+</style>
+
+@if(order != null)
+{
+    <RadzenTemplateForm Data="@order" Submit="@((OrderDetailsModel args) => { Submit(args); })">
+
+        <RadzenFieldset Text="Ogólne informacje">
+            <div class="row">
+                <div class="col-md-4 align-items-center d-flex">
+                    <RadzenLabel Text="Klient:" />
+                </div>
+                <div class="col-md-8">
+                    <RadzenTextBox style="width: 100%;" Name="ClientName" @bind-Value="order.ClientName" />
+                    <RadzenRequiredValidator Text="Pole Klient jest wymagane" Component="ClientName" Popup="false" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 align-items-center d-flex">
+                    <RadzenLabel Text="Dodatkowe informacje:" />
+                </div>
+                <div class="col-md-8">
+                    <RadzenTextBox style="width: 100%;" Name="AdditionalInfo" @bind-Value="order.AdditionalInfo" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 align-items-center d-flex">
+                    <RadzenLabel Text="Status:" />
+                </div>
+                <div class="col-md-8">
+                    <RadzenDropDown @bind-Value=@order.Status Data="@orderStatuses"  Style="width: 100%; max-width: 400px;" />
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-12 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
+                    <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Zapisz" Disabled="@(isLoading || !order.OrderLines.Any())" />
+
+                    <div>
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <DisplayError ErrorMessage="ErrorMessage" />
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </RadzenFieldset>
+
+        <RadzenFieldset Text="Linie zamówienia">
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" class="mt-2 mb-4" Text="Dodaj nową linię zamówienia" Click="@InsertRow" Disabled=@(orderLineToInsert != null || orderLineToUpdate != null) />
+            <RadzenDataGrid AllowAlternatingRows="false"
+                        EditMode="DataGridEditMode.Single"
+                        @ref="orderLinesGrid"
+                        Data="@order.OrderLines"
+                        TItem="OrderLinesDetailsModel"
+                        RowCreate="@OnCreateRow"
+                        RowUpdate="@OnUpdateRow"
+                        ColumnWidth="200px">
+                <Columns>
+                    <RadzenDataGridColumn TItem="OrderLinesDetailsModel" Property="ProductName" Title="Produkt">
+                        <EditTemplate Context="orderLine">
+                            <RadzenTextBox @bind-Value="orderLine.ProductName" Style="width:100%; display: block" Name="ProduktName" />
+                            <RadzenRequiredValidator Text="Pole Produkt jest wymagane" Component="ProduktName" Popup="false" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="OrderLinesDetailsModel" Property="Price" Title="Cena">
+                        <Template Context="orderLine">
+                            @String.Format(new System.Globalization.CultureInfo("pl-PL"), "{0:C}", orderLine.Price)
+                        </Template>
+                        <EditTemplate Context="orderLine">
+                            <RadzenNumeric @bind-Value="orderLine.Price" Style="width:100%" Name="Price" />
+                            <RadzenRequiredValidator Text="Pole Cena jest wymagane" Component="Price" Popup="false" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="OrderLinesDetailsModel" Context="orderLine" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="156px">
+                        <Template Context="orderLine">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditRow(orderLine))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(orderLine))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="orderLine">
+                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(orderLine))">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+
+        </RadzenFieldset>
+
+
+
+    </RadzenTemplateForm>
+}
+
+
+
+
+@code {
+
+    [Parameter]
+    public long OrderId { get; set; }
+
+    OrderDetailsModel order;
+    string errorMessage;
+    bool isLoading;
+    RadzenDataGrid<OrderLinesDetailsModel> orderLinesGrid;
+    OrderLinesDetailsModel orderLineToInsert;
+    OrderLinesDetailsModel orderLineToUpdate;
+
+    IEnumerable<string> orderStatuses = Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>().Select(x=> x.ToString());
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (OrderId == 0)
+            errorMessage = "Błędny parametru numeru zamówienia";
+
+        try
+        {
+            order = await orderService.GetAsync(OrderId);
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+    }
+
+    async Task Submit(OrderDetailsModel order)
+    {
+        var result = new OrderEditFormModel()
+            {
+                Status = order.Status,
+                AdditionalInfo = order.AdditionalInfo,
+                ClientName = order.ClientName
+            };
+
+        try
+        {
+            await orderService.UpdateAsync(OrderId, result);
+
+            dialogService.Close();
+        }
+        catch(Exception e)
+        {
+            errorMessage = e.Message;
+        }
+
+    }
+
+
+    async Task InsertRow()
+    {
+        orderLineToInsert = new OrderLinesDetailsModel();
+        isLoading = true;
+        await orderLinesGrid.InsertRow(orderLineToInsert);
+    }
+
+    async Task SaveRow(OrderLinesDetailsModel orderLine)
+    {
+        await orderLinesGrid.UpdateRow(orderLine);
+    }
+
+    async Task EditRow(OrderLinesDetailsModel orderLine)
+    {
+        orderLineToUpdate = orderLine;
+        isLoading = true;
+        await orderLinesGrid.EditRow(orderLine);
+    }
+
+    async Task DeleteRow(OrderLinesDetailsModel orderLine)
+    {
+        if (orderLine == orderLineToInsert)
+        {
+            orderLineToInsert = null;
+        }
+
+        if (orderLine == orderLineToUpdate)
+        {
+            orderLineToUpdate = null;
+        }
+
+        orderLinesGrid.CancelEditRow(orderLine);
+
+        await orderLinesGrid.Reload();
+    }
+
+    void OnCreateRow(OrderLinesDetailsModel orderLine)
+    {
+        orderLineToInsert = null;
+        isLoading = false;
+
+        //Dodanie wywołanie elementu [DOdanie orderLibe]
+    }
+
+    void OnUpdateRow(OrderLinesDetailsModel orderLine)
+    {
+        isLoading = false;
+        orderLineToUpdate = null;
+
+        //Dodanie wywołanie elementu [Edycja orderLibe]
+    }
+}

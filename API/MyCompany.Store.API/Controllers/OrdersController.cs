@@ -2,17 +2,13 @@
 using Mediator.Queries;
 using Microsoft.AspNetCore.Mvc;
 using MyCompany.Store.API.Controllers.Base;
-using MyCompany.Store.Application.Orders.Commands.AddOrderLine;
 using MyCompany.Store.Application.Orders.Commands.CreateOrder;
 using MyCompany.Store.Application.Orders.Commands.EditOrder;
 using MyCompany.Store.Application.Orders.Commands.RemoveOrder;
-using MyCompany.Store.Application.Orders.Commands.RemoveOrderLine;
-using MyCompany.Store.Application.Orders.Enums;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails.Dtos;
-using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Infrastructure.Web.Essentials.Commands;
 using MyCompany.Store.Infrastructure.Web.Essentials.Queries;
 using System.Net;
@@ -45,20 +41,6 @@ namespace MyCompany.Store.API.Controllers
         public async Task<IActionResult> RemoveOrder(long orderId)
         {
             return HandleServiceResult(await _commandDispatcher.Dispatch<RemoveOrderCommand, CommandResult>(new RemoveOrderCommand(orderId), CancellationToken.None));
-        }
-
-        [HttpDelete("{orderId}/OrderLine/{orderLineId}")]
-        [ProducesResponseType(typeof(CommandResult), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> RemoveOrderLine(long orderId, long orderLineId)
-        {
-            return HandleServiceResult(await _commandDispatcher.Dispatch<RemoveOrderLineCommand, CommandResult>(new RemoveOrderLineCommand(orderLineId, orderId), CancellationToken.None));
-        }
-
-        [HttpPost("OrderLine")]
-        [ProducesResponseType(typeof(CommandResult), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> AddOrderLine([FromBody] AddOrderLineCommand command)
-        {
-            return HandleServiceResult(await _commandDispatcher.Dispatch<AddOrderLineCommand, CommandResult>(command, CancellationToken.None));
         }
 
         [HttpGet("{orderId}")]

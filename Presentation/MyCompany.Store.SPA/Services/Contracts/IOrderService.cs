@@ -8,7 +8,8 @@ namespace MyCompany.Store.SPA.Services.Contracts
 		Task<QueryResult<IEnumerable<OrderListModel>>> GetAllOrdersAsync(int page, int perPage = 10, OrderStatus? status = null, DateTime? createdDate = null);
 		Task<OrderDetailsModel> GetAsync(long orderId);
 		Task RemoveAsync(long orderId);
-		Task AddAsync(OrderFormsModel order);
+		Task AddAsync(OrderAddFormModel order);
+		Task UpdateAsync(long orderId, OrderEditFormModel order);
 	}
 }
  

@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace MyCompany.Store.SPA.Models
+﻿namespace MyCompany.Store.SPA.Models
 {
-    public class OrderFormsModel
+    public class OrderAddFormModel
     {
         public string ClientName { get; set; }
 
@@ -11,7 +9,7 @@ namespace MyCompany.Store.SPA.Models
         public List<OrderLinesDetailsModel> OrderLines { get; set; }
 
 
-        public OrderFormsModel()
+        public OrderAddFormModel()
         {
             OrderLines = new List<OrderLinesDetailsModel>();
         }

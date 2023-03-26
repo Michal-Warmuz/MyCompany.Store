@@ -11,7 +11,7 @@
     }
 </style>
 
-<RadzenTemplateForm Data="@order" Submit="@((OrderFormsModel args) => { Submit(args); })">
+<RadzenTemplateForm Data="@order" Submit="@((OrderAddFormModel args) => { Submit(args); })">
 
     <RadzenFieldset Text="Ogólne informacje">
         <div class="row">
@@ -79,10 +79,10 @@
 
     <div class="row justify-content-center">
         <div class="col-md-12 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
-            <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Zapisz" Disabled="@(IsLoading || !order.OrderLines.Any())" />
+            <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Zapisz" Disabled="@(isLoading || !order.OrderLines.Any())" />
 
             <div>
-                @if (!string.IsNullOrEmpty(ErrorMessage))
+                @if (!string.IsNullOrEmpty(errorMessage))
                 {
                     <DisplayError ErrorMessage="ErrorMessage" />
                 }
@@ -97,15 +97,13 @@
 
 @code {
 
-    OrderFormsModel order;
-
+    OrderAddFormModel order;
     RadzenDataGrid<OrderLinesDetailsModel> orderLinesGrid;
-
     OrderLinesDetailsModel orderLineToInsert;
     OrderLinesDetailsModel orderLineToUpdate;
 
-    protected string ErrorMessage { get; set; }
-    protected bool IsLoading { get; set; }
+    string errorMessage;
+    bool isLoading;
 
     protected override void OnInitialized()
     {
@@ -120,11 +118,11 @@
 
     }
 
-    async Task Submit(OrderFormsModel order)
+    async Task Submit(OrderAddFormModel order)
     {
         try
         {
-            IsLoading = true;
+            isLoading = true;
 
             await orderService.AddAsync(order);
 
@@ -132,11 +130,11 @@
         }
         catch(Exception e)
         {
-            ErrorMessage = e.Message;
+            errorMessage = e.Message;
         }
         finally
         {
-            IsLoading = false;
+            isLoading = false;
         }
 
 
@@ -145,7 +143,7 @@
     async Task InsertRow()
     {
         orderLineToInsert = new OrderLinesDetailsModel();
-        IsLoading = true;
+        isLoading = true;
         await orderLinesGrid.InsertRow(orderLineToInsert);
     }
 
@@ -157,7 +155,7 @@
     async Task EditRow(OrderLinesDetailsModel orderLine)
     {
         orderLineToUpdate = orderLine;
-        IsLoading = true;
+        isLoading = true;
         await orderLinesGrid.EditRow(orderLine);
     }
 
@@ -186,12 +184,12 @@
         order.OrderLines.Add(orderLine);
 
         orderLineToInsert = null;
-        IsLoading = false;
+        isLoading = false;
     }
 
     void OnUpdateRow(OrderLinesDetailsModel orderLine)
     {
-        IsLoading = false;
+        isLoading = false;
         orderLineToUpdate = null;
     }
 

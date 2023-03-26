@@ -1,12 +1,12 @@
 ﻿namespace MyCompany.Store.SPA.Models
 {
-    public record OrderDetailsModel
+    public class OrderDetailsModel
     {
-        public string ClientName { get; init; }
-        public DateTime CreatedDate { get; init; }
-        public string AdditionalInfo { get; init; }
-        public string Status { get; init; }
-        public decimal TotalPrice { get; init; }
-        public IEnumerable<OrderLinesDetailsModel> OrderLines { get; init; }
+        public string ClientName { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string AdditionalInfo { get; set; }
+        public string Status { get; set; }
+        public decimal TotalPrice { get; set; }
+        public IEnumerable<OrderLinesDetailsModel> OrderLines { get; set; }
     }
 }
