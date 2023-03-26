@@ -29,9 +29,7 @@ namespace MyCompany.Store.Application.Orders.Commands.RemoveOrder
                 return new CommandResult(ResponseStatus.ValidationErrors, ex.Message);
             }
 
-            _orderRepository.Remove(order);
-
-            await _orderRepository.CommitAsync();
+            await _orderRepository.RemoveAsync(new OrderId(command.OrderId));
 
             return new CommandResult(ResponseStatus.Ok);
         }

@@ -1,4 +1,5 @@
 using Autofac;
+using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using Mediator;
 using MyCompany.Store.Application.Orders;
@@ -27,6 +28,14 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
 });
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
+builder.Services.AddCors(o => o.AddPolicy("Policy", builder =>
+{
+    builder.WithOrigins("http://localhost:5240")
+           .AllowAnyMethod()
+           .AllowAnyHeader();
+           
+}));
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -34,6 +43,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("Policy");
 
 app.UseHttpsRedirection();
 

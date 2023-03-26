@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace MyCompany.Store.Infrastructure.Database.Repositories
@@ -34,28 +35,27 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
                         .ToListAsync();
         }
 
-        public async Task<IReadOnlyList<TType>> GetAllAsync<TType>(int page, int perPage, DateTime? createdDate, OrderStatus? status,  Expression<Func<Order, TType>> select) where TType : class
+        public async Task<IEnumerable<TType>> GetAllAsync<TType>(int page, int perPage, DateOnly? createdDate, OrderStatus? status,  Func<Order, TType> select) where TType : class
         {
 
-            var query = _context.Orders
+            var query =  _context.Orders
                         .Skip((page - 1) * perPage)
                         .Take(perPage)
                         .AsNoTracking()
                         .Include(x => x.OrderLines)
-                        .AsQueryable();
+                        .AsEnumerable(); //Wymuszone x.GetOrderStatus() == status.Value, EF nie radzi sobie z takim zapisem
 
-            if(createdDate.HasValue)
+            if (createdDate.HasValue)
             {
-                query = query.Where(x => x.GetCreatedDate() == createdDate);
+                query = query.Where(x => DateOnly.FromDateTime(x.GetCreatedDate()).Equals(createdDate));
             }
 
             if(status != null)
             {
-                query = query.Where(x => x.GetOrderStatus() == status.Value);
+                query = query.Where(x => x.GetOrderStatus().Equals(status.Value));
             }
 
-
-            return await query.Select(select).ToListAsync();
+            return query.Select(select);
         }
 
         public async Task<Order> GetAsync(OrderId orderId)
@@ -65,6 +65,11 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
                 .Where(x=>x.Id == orderId)
                 .Include(x=>x.OrderLines)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task RemoveAsync(OrderId orderId)
+        {
+            await _context.Orders.Where(x => x.Id == orderId).ExecuteDeleteAsync();
         }
 
         public async Task<TType> GetAsync<TType>(OrderId orderId, Expression<Func<Order, TType>> select) where TType : class
@@ -77,14 +82,14 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
                         .FirstOrDefaultAsync();
         }
 
-        public void Remove(Order order)
-        {
-            _context.Remove(order);
-        }
-
         public void Update(Order order)
         {
             _context.Update(order);
+        }
+
+        public async Task<int> GetRecordsCountAsync()
+        {
+            return await _context.Orders.AsNoTracking().CountAsync();
         }
     }
 }

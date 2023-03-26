@@ -4,6 +4,8 @@ namespace MyCompany.Store.Core.Domain.Orders
 {
     public class OrderStatus : ValueObject
     {
+        private OrderStatus() { }
+
         private OrderStatus(string value)
         {
             Value = value;
@@ -24,6 +26,11 @@ namespace MyCompany.Store.Core.Domain.Orders
         protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return Value;
+        }
+
+        public override string ToString()
+        {
+            return Value;
         }
     }
 }

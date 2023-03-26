@@ -13,6 +13,6 @@ namespace MyCompany.Store.Core.Domain.Orders.Rules
 
         public string Message => $"Można usuwać zamówienia tylko ze statusem {OrderStatus.New}";
 
-        public bool IsBroken() => _status != OrderStatus.New;
+        public bool IsBroken() => !_status.Equals(OrderStatus.New);
     }
 }

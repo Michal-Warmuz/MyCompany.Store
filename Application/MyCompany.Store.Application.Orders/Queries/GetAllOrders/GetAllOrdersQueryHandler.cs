@@ -33,19 +33,17 @@ namespace MyCompany.Store.Application.Orders.Queries.GetAllOrders
             var orders = await _orderRepository.GetAllAsync(query.Page, query.PerPage, query.CreatedDate, status,
                 order => new GetAllOrdersDto()
                 {
+                    OrderId = order.Id.Value,
                     Status = order.GetOrderStatus(),
                     AdditionalInfo = order.GetAdditionalInfo(),
                     ClientName = order.GetClientName(),
                     CreatedDate = order.GetCreatedDate(),
-                    OrderLines = order.OrderLines.Select(x => new GetAllOrderLinesDto()
-                    {
-                        Price = x.GetPriceValue(),
-                        ProductName = x.GetProductName(),
-                    }),
                     TotalPrice = order.GetOrderPirce()
                 });
 
-            return new QueryResult<IEnumerable<GetAllOrdersDto>> (ResponseStatus.Ok, orders);
+            var recordsCount = await _orderRepository.GetRecordsCountAsync();
+
+            return new QueryResult<IEnumerable<GetAllOrdersDto>> (ResponseStatus.Ok, orders, count: recordsCount);
         }
     }
 }

@@ -1,5 +1,129 @@
 ﻿@page "/"
+@using MyCompany.Store.SPA.Enums;
+@using MyCompany.Store.SPA.Models;
+@using MyCompany.Store.SPA.Services.Contracts;
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
+@inject IOrderService orderService;
+@inject DialogService dialogService;
+
+@if(!string.IsNullOrEmpty(ErrorMessage))
+{
+    <DisplayError ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" class="mt-2 mb-4" Click="@AddOrderAsync" Text="Dodaj nowe zamówienie" />
+
+    <RadzenDataGrid @ref="ordersGrid" KeyProperty="OrderId" FilterMode="FilterMode.Simple" AllowFiltering="true" IsLoading="@IsLoading" Count="@DataCount" Data="@Orders" LoadData="@LoadData" AllowPaging="true" PageSize="@PerPage" PagerHorizontalAlign="HorizontalAlign.Center">
+        <Columns>
+            <RadzenDataGridColumn TItem="OrderListModel" Filterable="false" Property="ClientName" Title="Klient" />
+            <RadzenDataGridColumn TItem="OrderListModel" Property="CreatedDate" Title="Data utworzenia" />
+            <RadzenDataGridColumn TItem="OrderListModel" Filterable="false" Property="AdditionalInfo" Title="Dodatkowe informacje" />
+            <RadzenDataGridColumn TItem="OrderListModel" Property="Status" Title="Status">
+                <FilterTemplate>
+                    <RadzenDropDown Change=@(args => ordersGrid.Reload()) @bind-Value="@currentOrderStatus" TextProperty="Text" ValueProperty="Value" Style="width:100%;"
+                                Data="@(Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus?>().Select(t => new { Text = $"{t}", Value = t }))" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OrderListModel" Filterable="false" Property="TotalPrice" Title="Cena"> 
+                <Template Context="order">
+                    @String.Format(new System.Globalization.CultureInfo("pl-PL"), "{0:C}", order.TotalPrice)
+                </Template>
+                </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OrderListModel" Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="156px">
+                <Template Context="order">
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="info" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => GetOrderAsync(order.OrderId))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => RemoveOrderAsync(order.OrderId))" Disabled="@(order.Status != "New")" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+
+
+@code {
+
+    RadzenDataGrid<OrderListModel> ordersGrid;
+
+    protected string ErrorMessage { get; set; }
+    protected bool IsLoading { get; set; }
+    protected int DataCount { get; set; }
+    protected IEnumerable<OrderListModel> Orders { get; set; }
+
+    OrderStatus? currentOrderStatus;
+
+    FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
+    LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
+
+    protected int PerPage = 10;
+
+    async Task LoadData(LoadDataArgs args)
+    {
+        IsLoading = true;
+
+        var createDateFilter = args.Filters.FirstOrDefault(x => x.Property == "CreatedDate");
+
+        DateTime? createdDate = null;
+
+        if (createDateFilter != null)
+        {
+            createdDate = (DateTime)createDateFilter.FilterValue;
+        }
+
+        try
+        {
+            var page = ordersGrid.CurrentPage + 1;
+
+
+            var ordersDb = await orderService.GetAllOrdersAsync(page, PerPage, currentOrderStatus, createdDate);
+
+            Orders = ordersDb.Payload;
+            DataCount = ordersDb.Count;
+        }
+        catch (Exception e)
+        {
+            ErrorMessage = e.Message;
+        }
+
+        IsLoading = false;
+    }
+
+    async Task AddOrderAsync()
+    {
+        await dialogService.OpenAsync<AddEditOrder>(
+           $"Dodanie zamówienia",
+           new Dictionary<string, object>(),
+           new DialogOptions() { Width = "700px", Height = "512px", Resizable = false, Draggable = false }
+        );
+
+        await ordersGrid.Reload();
+    }
+
+    async Task GetOrderAsync(long orderId)
+    {
+        await dialogService.OpenAsync<OrderDetails>(
+               $"Zamówienie numer: {orderId}",
+               new Dictionary<string, object>() { { "orderId", orderId } },
+               new DialogOptions() { Width = "700px", Height = "512px", Resizable = false, Draggable = false }
+        );
+    }
+
+    async Task RemoveOrderAsync(long orderId)
+    {
+        try
+        {
+            await orderService.RemoveAsync(orderId);
+
+            await ordersGrid.Reload();
+        }
+        catch(Exception e)
+        {
+            ErrorMessage = e.Message;
+        }
+    }
+}

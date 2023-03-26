@@ -1,0 +1,73 @@
+﻿@page "/order/{orderId}"
+@using MyCompany.Store.SPA.Models;
+@using MyCompany.Store.SPA.Services.Contracts;
+
+
+@inject IOrderService orderService;
+@inject DialogService dialogService
+
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <DisplayError ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <div class="row">
+        <div>
+            <div>
+                <span>Klient: <b>@Order?.ClientName</b></span>
+            </div>
+            <div>
+                <span>Data utworzenia: <b>@Order?.CreatedDate</b></span>
+            </div>
+            <div>
+                <span>Dodatkowe informacje: <b>@Order?.AdditionalInfo</b></span>
+            </div>
+            <div>
+                <span>Całkowita cena: <b>@Order?.TotalPrice</b></span>
+            </div>
+        </div>
+    </div>
+    <div class="row my-4">
+        <div class="col-md-12">
+            <RadzenDataGrid Data="@Order?.OrderLines" TItem="OrderLinesDetailsModel" ColumnWidth="200px" Class="mt-3">
+                <Columns>
+                    <RadzenDataGridColumn TItem="OrderLinesDetailsModel" Property="ProductName" Title="Produkt" />
+                    <RadzenDataGridColumn TItem="OrderLinesDetailsModel" Property="Price" Title="Cena" />
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+
+}
+
+
+
+
+@code {
+    [Parameter]
+    public long OrderId { get; set; }
+
+
+    private string ErrorMessage { get; set; }
+    private OrderDetailsModel Order { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (OrderId == 0)
+            ErrorMessage = "Błędny parametru numeru zamówienia";
+
+        try
+        {
+            Order = await orderService.GetAsync(OrderId);
+        }
+        catch (Exception e)
+        {
+            ErrorMessage = e.Message;
+        }
+    }
+}

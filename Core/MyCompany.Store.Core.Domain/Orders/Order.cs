@@ -54,6 +54,19 @@ namespace MyCompany.Store.Core.Domain.Orders
             AddDomainEvent(new OrderEditedDomainEvent(client, status, additionalInfo));
         }
 
+        public void RemoveOrderLine(OrderLineId orderLineId)
+        {
+            CheckRule(new OrderCannotBeEditedWhenStatusIsNewRule(_status));
+
+            var orderline = GetOrderLine(orderLineId);
+
+            if(orderline != null)
+            {
+                _orderLines.Remove(orderline);
+                orderline.Remove();
+            }
+        }
+
 
         public void Remove()
         {
@@ -65,7 +78,12 @@ namespace MyCompany.Store.Core.Domain.Orders
 
         public void AddOrderLine(Amount amount, Product product)
         {
-            _orderLines.Add(OrderLine.CreateNew(amount, product));
+            _orderLines.Add(OrderLine.CreateNew(Id, amount, product));
+        }
+
+        private OrderLine? GetOrderLine(OrderLineId orderLineId)
+        {
+            return _orderLines.SingleOrDefault(x => x.Id == orderLineId);
         }
 
         public decimal GetOrderPirce() => _orderLines.Sum(x => x.GetPriceValue());
@@ -77,20 +95,5 @@ namespace MyCompany.Store.Core.Domain.Orders
         public string GetOrderStatus() => _status.Value;
 
         public DateTime GetCreatedDate() => _createDate;
-
-        public void Cancel()
-        {
-            _status = OrderStatus.Cancel;
-        }
-
-        public void Delivery()
-        {
-            _status = OrderStatus.Delivery;
-        }
-
-        public void Confirm()
-        {
-            _status = OrderStatus.Confirm;
-        }
     }
 }

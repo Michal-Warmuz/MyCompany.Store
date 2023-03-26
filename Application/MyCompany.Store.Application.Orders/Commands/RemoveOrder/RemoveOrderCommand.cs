@@ -1,4 +1,5 @@
 ﻿using Mediator.Commands;
+using MyCompany.Store.Core.Domain.Orders;
 
 namespace MyCompany.Store.Application.Orders.Commands.RemoveOrder
 {

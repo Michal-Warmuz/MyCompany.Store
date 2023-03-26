@@ -8,10 +8,10 @@ namespace MyCompany.Store.Application.Orders.Queries.GetAllOrders
     {
         public int Page { get; init; }
         public int PerPage { get; init; }
-        public DateTime? CreatedDate { get; init; }
+        public DateOnly? CreatedDate { get; init; }
         public OrderStatus? Status { get; init; }
 
-        public GetAllOrdersQuery(int page, int perPage, DateTime? createdDate, OrderStatus? status)
+        public GetAllOrdersQuery(int page, int perPage, DateOnly? createdDate, OrderStatus? status)
         {
             Page = page;
             PerPage = perPage;
