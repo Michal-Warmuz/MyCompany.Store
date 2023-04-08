@@ -1,4 +1,4 @@
-﻿namespace MyCompany.Store.Application.Orders.Enums
+﻿namespace MyCompany.Store.Core.Domain.Orders.Enums
 {
     public enum OrderStatus
     {

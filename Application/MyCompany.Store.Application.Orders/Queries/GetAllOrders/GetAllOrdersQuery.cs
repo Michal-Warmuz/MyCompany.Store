@@ -1,6 +1,6 @@
 ﻿using Mediator.Queries;
-using MyCompany.Store.Application.Orders.Enums;
-using MyCompany.Store.Infrastructure.Web.Essentials.Queries;
+using MyCompany.Store.Application.Shared.Queries;
+using MyCompany.Store.Core.Domain.Orders.Enums;
 
 namespace MyCompany.Store.Application.Orders.Queries.GetAllOrders
 {

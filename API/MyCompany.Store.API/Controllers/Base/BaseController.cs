@@ -1,8 +1,8 @@
 ﻿using Mediator.Commands;
 using Mediator.Queries;
 using Microsoft.AspNetCore.Mvc;
-using MyCompany.Store.Infrastructure.Web.Essentials.Base;
-using MyCompany.Store.Infrastructure.Web.Essentials.Enums;
+using MyCompany.Store.Application.Shared.Base;
+using MyCompany.Store.Application.Shared.Enums;
 
 namespace MyCompany.Store.API.Controllers.Base
 {

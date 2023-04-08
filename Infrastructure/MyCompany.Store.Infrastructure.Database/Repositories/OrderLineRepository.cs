@@ -18,11 +18,6 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
             await _context.OrderLines.AddAsync(orderLine);
         }
 
-        public async Task<int> CommitAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         public async Task<OrderLine> GetAsync(OrderLineId orderLineId)
         {
             return await _context.OrderLines.SingleOrDefaultAsync(x => x.Id == orderLineId);

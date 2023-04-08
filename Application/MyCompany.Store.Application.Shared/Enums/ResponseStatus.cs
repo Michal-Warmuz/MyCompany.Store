@@ -1,4 +1,4 @@
-﻿namespace MyCompany.Store.Infrastructure.Web.Essentials.Enums
+﻿namespace MyCompany.Store.Application.Shared.Enums
 {
     public enum ResponseStatus
     {

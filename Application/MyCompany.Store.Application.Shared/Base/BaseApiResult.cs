@@ -1,7 +1,7 @@
-﻿using MyCompany.Store.Infrastructure.Web.Essentials.Enums;
+﻿using MyCompany.Store.Application.Shared.Enums;
 using Newtonsoft.Json;
 
-namespace MyCompany.Store.Infrastructure.Web.Essentials.Base
+namespace MyCompany.Store.Application.Shared.Base
 {
     public abstract class BaseApiResult
     {

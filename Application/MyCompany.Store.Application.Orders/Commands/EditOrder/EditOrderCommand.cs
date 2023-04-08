@@ -1,5 +1,5 @@
 ﻿using Mediator.Commands;
-using MyCompany.Store.Application.Orders.Enums;
+using MyCompany.Store.Core.Domain.Orders.Enums;
 
 namespace MyCompany.Store.Application.Orders.Commands.EditOrder
 {

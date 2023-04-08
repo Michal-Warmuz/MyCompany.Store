@@ -1,7 +1,7 @@
-﻿using MyCompany.Store.Infrastructure.Web.Essentials.Base;
-using MyCompany.Store.Infrastructure.Web.Essentials.Enums;
+﻿using MyCompany.Store.Application.Shared.Base;
+using MyCompany.Store.Application.Shared.Enums;
 
-namespace MyCompany.Store.Infrastructure.Web.Essentials.Commands
+namespace MyCompany.Store.Application.Shared.Commands
 {
     public class CommandResult : BaseApiResult
     {

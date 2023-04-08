@@ -1,5 +1,7 @@
 ﻿using Autofac;
 using Microsoft.EntityFrameworkCore;
+using MyCompany.Store.Application.Shared.Data;
+using MyCompany.Store.Infrastructure.Database.SeedWork;
 
 namespace MyCompany.Store.Infrastructure.Database
 {
@@ -16,6 +18,15 @@ namespace MyCompany.Store.Infrastructure.Database
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
+
+            builder.RegisterType<SqlConnectionFactory>()
+                    .As<ISqlConnectionFactory>()
+                    .WithParameter("connectionString", _databaseConnectionString)
+                    .InstancePerLifetimeScope();
+
+            builder.RegisterType<UnitOfWork>()
+                    .As<IUnitOfWork>()
+                    .InstancePerLifetimeScope();
 
             builder
             .Register(c =>

@@ -1,47 +1,59 @@
-﻿using Mediator.Queries;
+﻿using Dapper;
+using Mediator.Queries;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
+using MyCompany.Store.Application.Shared.Data;
+using MyCompany.Store.Application.Shared.Enums;
+using MyCompany.Store.Application.Shared.Queries;
 using MyCompany.Store.Core.Domain.Orders;
-using MyCompany.Store.Core.Domain.Orders.Contracts;
-using MyCompany.Store.Infrastructure.Web.Essentials.Enums;
-using MyCompany.Store.Infrastructure.Web.Essentials.Queries;
 
 namespace MyCompany.Store.Application.Orders.Queries.GetAllOrders
 {
     internal class GetAllOrdersQueryHandler : IQueryHandler<GetAllOrdersQuery, QueryResult<IEnumerable<GetAllOrdersDto>>>
     {
-        private readonly IOrderRepository _orderRepository;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public GetAllOrdersQueryHandler(IOrderRepository orderRepository)
+        public GetAllOrdersQueryHandler(ISqlConnectionFactory sqlConnectionFactory)
         {
-            _orderRepository = orderRepository;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         public async Task<QueryResult<IEnumerable<GetAllOrdersDto>>> Handle(GetAllOrdersQuery query, CancellationToken cancellation)
         {
-            OrderStatus status = null;
 
-            switch (query.Status)
-            {
-                case Enums.OrderStatus.Delivery: status = OrderStatus.Delivery; break;
-                case Enums.OrderStatus.Confirm: status = OrderStatus.Confirm; break;
-                case Enums.OrderStatus.Cancel: status = OrderStatus.Cancel; break;
-                case Enums.OrderStatus.New: status = OrderStatus.New; break;
-                default:
-                    break;
-            }
+            var connection = _sqlConnectionFactory.GetOpenConnection();
 
-            var orders = await _orderRepository.GetAllAsync(query.Page, query.PerPage, query.CreatedDate, status,
-                order => new GetAllOrdersDto()
-                {
-                    OrderId = order.Id.Value,
-                    Status = order.GetOrderStatus(),
-                    AdditionalInfo = order.GetAdditionalInfo(),
-                    ClientName = order.GetClientName(),
-                    CreatedDate = order.GetCreatedDate(),
-                    TotalPrice = order.GetOrderPirce()
-                });
+            var status = OrderStatus.GetOrderStatus(query.Status)?.Value;
+            var createdDate = query.CreatedDate.HasValue ? query.CreatedDate.Value.ToShortDateString() : null;
 
-            var recordsCount = await _orderRepository.GetRecordsCountAsync();
+            string ordersSQL = @$"
+                  SELECT 
+	                    [Order].[Id] AS [{nameof(GetAllOrdersDto.OrderId)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.CreateDate)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.ClientName)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.AdditionalInfo)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.Status)}]
+	                    ,SUM([OrderLine].[Price]) AS [{nameof(GetAllOrdersDto.TotalPrice)}]
+                  FROM [dbo].[Orders] AS [Order]
+                  LEFT JOIN [dbo].OrderLines AS [OrderLine] 
+                  ON [ORDER].[Id] = [OrderLine].OrderId
+                  WHERE 
+                        ((@status IS NULL) OR (@status IS NOT NULL AND [Order].[Status] = @status))
+                        AND ((@createdDate IS NULL) OR (@createdDate IS NOT NULL AND CONVERT(VARCHAR(25), [Order].[CreateDate], 126) LIKE @createdDate))
+                  GROUP BY 
+                        [Order].[Id]
+                        ,[Order].[CreateDate]
+                        ,[Order].[ClientName]
+                        ,[Order].[AdditionalInfo]
+                        ,[Order].[Status]
+                  ORDER BY [Order].[Id]
+                  OFFSET (@Page - 1) * @PerPage ROWS 
+                  FETCH NEXT @PerPage ROWS ONLY";
+
+            var orders = await connection.QueryAsync<GetAllOrdersDto>(ordersSQL, new { query.PerPage, query.Page, status, createdDate   });
+
+            const string recordsCountSql = "SELECT COUNT(*) FROM [dbo].[Orders]";
+
+            var recordsCount = await connection.ExecuteScalarAsync<int>(recordsCountSql);
 
             return new QueryResult<IEnumerable<GetAllOrdersDto>> (ResponseStatus.Ok, orders, count: recordsCount);
         }

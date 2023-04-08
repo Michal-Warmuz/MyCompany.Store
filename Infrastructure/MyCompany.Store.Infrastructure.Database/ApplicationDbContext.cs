@@ -4,7 +4,7 @@ using MyCompany.Store.Infrastructure.Database.Configurations;
 
 namespace MyCompany.Store.Infrastructure.Database
 {
-    internal class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions options) : base(options) { }
 

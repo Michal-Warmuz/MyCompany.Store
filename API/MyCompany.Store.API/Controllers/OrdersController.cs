@@ -9,8 +9,9 @@ using MyCompany.Store.Application.Orders.Queries.GetAllOrders;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails.Dtos;
-using MyCompany.Store.Infrastructure.Web.Essentials.Commands;
-using MyCompany.Store.Infrastructure.Web.Essentials.Queries;
+using MyCompany.Store.Application.Shared.Commands;
+using MyCompany.Store.Application.Shared.Queries;
+using MyCompany.Store.Core.Domain.Orders.Enums;
 using System.Net;
 
 namespace MyCompany.Store.API.Controllers
@@ -52,7 +53,7 @@ namespace MyCompany.Store.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(QueryResult<IEnumerable<GetAllOrdersDto>>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetAllOrders(int page, int perPage, DateOnly? createdDate, Application.Orders.Enums.OrderStatus? status)
+        public async Task<IActionResult> GetAllOrders(int page, int perPage, DateOnly? createdDate, OrderStatus? status)
         {
             return HandleServiceResult(await _queryDispatcher.Dispatch<GetAllOrdersQuery, QueryResult<IEnumerable<GetAllOrdersDto>>>(new GetAllOrdersQuery(page, perPage, createdDate, status), CancellationToken.None));
         }

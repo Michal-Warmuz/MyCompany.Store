@@ -32,5 +32,14 @@ namespace MyCompany.Store.Core.Domain.Orders
         {
             return Value;
         }
+
+        public static OrderStatus? GetOrderStatus(Enums.OrderStatus? orderStatus) => orderStatus switch
+        {
+            Enums.OrderStatus.Confirm => Confirm,
+            Enums.OrderStatus.Cancel => Cancel,
+            Enums.OrderStatus.Delivery => Delivery,
+            Enums.OrderStatus.New => New,
+            _ => null
+        };
     }
 }

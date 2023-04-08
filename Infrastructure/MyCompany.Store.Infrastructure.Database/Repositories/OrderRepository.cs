@@ -20,76 +20,14 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
             await _context.AddAsync(order);
         }
 
-        public async Task<int> CommitAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
-        public async Task<IReadOnlyList<Order>> GetAllAsync(int page, int perPage)
-        {
-            return await _context.Orders
-                        .Skip((page - 1) * perPage)
-                        .Take(perPage)
-                        .AsNoTracking()
-                        .Include(x => x.OrderLines)
-                        .ToListAsync();
-        }
-
-        public async Task<IEnumerable<TType>> GetAllAsync<TType>(int page, int perPage, DateOnly? createdDate, OrderStatus? status,  Func<Order, TType> select) where TType : class
-        {
-
-            var query =  _context.Orders
-                        .Skip((page - 1) * perPage)
-                        .Take(perPage)
-                        .AsNoTracking()
-                        .Include(x => x.OrderLines)
-                        .AsEnumerable(); //Wymuszone x.GetOrderStatus() == status.Value, EF nie radzi sobie z takim zapisem
-
-            if (createdDate.HasValue)
-            {
-                query = query.Where(x => DateOnly.FromDateTime(x.GetCreatedDate()).Equals(createdDate));
-            }
-
-            if(status != null)
-            {
-                query = query.Where(x => x.GetOrderStatus().Equals(status.Value));
-            }
-
-            return query.Select(select);
-        }
-
-        public async Task<Order> GetAsync(OrderId orderId)
-        {
-            return await _context.Orders
-                .AsNoTracking()
-                .Where(x=>x.Id == orderId)
-                .Include(x=>x.OrderLines)
-                .FirstOrDefaultAsync();
-        }
-
         public async Task RemoveAsync(OrderId orderId)
         {
             await _context.Orders.Where(x => x.Id == orderId).ExecuteDeleteAsync();
         }
 
-        public async Task<TType> GetAsync<TType>(OrderId orderId, Expression<Func<Order, TType>> select) where TType : class
-        {
-            return await _context.Orders
-                        .AsNoTracking()
-                        .Where(x => x.Id == orderId)
-                        .Include(x => x.OrderLines)
-                        .Select(select)
-                        .FirstOrDefaultAsync();
-        }
-
         public void Update(Order order)
         {
             _context.Update(order);
-        }
-
-        public async Task<int> GetRecordsCountAsync()
-        {
-            return await _context.Orders.AsNoTracking().CountAsync();
         }
     }
 }

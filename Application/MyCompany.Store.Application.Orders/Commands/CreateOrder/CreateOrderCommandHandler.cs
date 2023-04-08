@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
 using Mediator.Commands;
+using MyCompany.Store.Application.Shared.Commands;
+using MyCompany.Store.Application.Shared.Enums;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
-using MyCompany.Store.Infrastructure.Web.Essentials.Commands;
-using MyCompany.Store.Infrastructure.Web.Essentials.Enums;
-using System.ComponentModel.DataAnnotations;
+using MyCompany.Store.Infrastructure.Database.SeedWork;
 
 namespace MyCompany.Store.Application.Orders.Commands.CreateOrder
 {
@@ -12,11 +12,13 @@ namespace MyCompany.Store.Application.Orders.Commands.CreateOrder
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IValidator<CreateOrderCommand> _validator;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CreateOrderCommandHandler(IOrderRepository orderRepository, IValidator<CreateOrderCommand> validator)
+        public CreateOrderCommandHandler(IOrderRepository orderRepository, IValidator<CreateOrderCommand> validator, IUnitOfWork unitOfWork)
         {
             _orderRepository = orderRepository;
             _validator = validator;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<CommandResult> Handle(CreateOrderCommand command, CancellationToken cancellation)
@@ -36,7 +38,7 @@ namespace MyCompany.Store.Application.Orders.Commands.CreateOrder
 
             await _orderRepository.AddAsync(order);
 
-            await _orderRepository.CommitAsync();
+            await _unitOfWork.CommitAsync();
 
             return new CommandResult(ResponseStatus.Created);
         }
