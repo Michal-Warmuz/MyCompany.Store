@@ -2,6 +2,6 @@
 {
     public interface IOrderRepository : IAsyncRepository<Order, OrderId>
     {
-        void Update(Order order);
+        Task UpdateAsync(OrderId orderId);
     }
 }

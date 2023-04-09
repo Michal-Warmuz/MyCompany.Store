@@ -1,4 +1,5 @@
 ﻿using Mediator.Commands;
+using MyCompany.Store.Application.Orders.Commands.EditOrder.Dtos;
 using MyCompany.Store.Core.Domain.Orders.Enums;
 
 namespace MyCompany.Store.Application.Orders.Commands.EditOrder
@@ -9,6 +10,7 @@ namespace MyCompany.Store.Application.Orders.Commands.EditOrder
         public string ClientName { get; init; }
         public string AdditionalInfo { get; init; }
         public OrderStatus Status { get; init; }
+        public IEnumerable<CreateOrderLineDto> OrderLines { get; init; }
 
         public EditOrderCommand(long orderId, string clientName, string additionalInfo, OrderStatus status)
         {

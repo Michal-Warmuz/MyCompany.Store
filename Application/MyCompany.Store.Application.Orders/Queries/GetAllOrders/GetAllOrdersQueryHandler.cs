@@ -40,11 +40,11 @@ namespace MyCompany.Store.Application.Orders.Queries.GetAllOrders
                         ((@status IS NULL) OR (@status IS NOT NULL AND [Order].[Status] = @status))
                         AND ((@createdDate IS NULL) OR (@createdDate IS NOT NULL AND CONVERT(VARCHAR(25), [Order].[CreateDate], 126) LIKE @createdDate))
                   GROUP BY 
-                        [Order].[Id]
-                        ,[Order].[CreateDate]
-                        ,[Order].[ClientName]
-                        ,[Order].[AdditionalInfo]
-                        ,[Order].[Status]
+	                    [Order].[Id] AS [{nameof(GetAllOrdersDto.OrderId)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.CreateDate)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.ClientName)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.AdditionalInfo)}]
+                        ,[Order].[{nameof(GetAllOrdersDto.Status)}]
                   ORDER BY [Order].[Id]
                   OFFSET (@Page - 1) * @PerPage ROWS 
                   FETCH NEXT @PerPage ROWS ONLY";

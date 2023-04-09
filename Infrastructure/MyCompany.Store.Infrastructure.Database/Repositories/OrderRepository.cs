@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
-using System.Linq;
-using System.Linq.Expressions;
 
 namespace MyCompany.Store.Infrastructure.Database.Repositories
 {
@@ -15,19 +13,26 @@ namespace MyCompany.Store.Infrastructure.Database.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(Order order)
+        public async Task AddAsync(Order entity)
         {
-            await _context.AddAsync(order);
+            await _context.Orders.AddAsync(entity);
         }
 
-        public async Task RemoveAsync(OrderId orderId)
+        public async Task<Order?> GetAsync(OrderId entityId)
         {
-            await _context.Orders.Where(x => x.Id == orderId).ExecuteDeleteAsync();
+            return await _context.Orders.SingleOrDefaultAsync(x => x.Id == entityId);
         }
 
-        public void Update(Order order)
+        public async Task RemoveAsync(OrderId entityId)
         {
-            _context.Update(order);
+            await _context.Orders.Where(x => x.Id == entityId).ExecuteDeleteAsync();
+        }
+
+        public async Task UpdateAsync(Order entity)
+        {
+            _context.Orders.Update(entity);
+
+            await Task.CompletedTask;
         }
     }
 }
