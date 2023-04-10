@@ -2,7 +2,6 @@
 using Mediator.Queries;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
 using MyCompany.Store.Application.Shared.Data;
-using MyCompany.Store.Application.Shared.Enums;
 using MyCompany.Store.Application.Shared.Queries;
 using MyCompany.Store.Core.Domain.Orders;
 
@@ -55,7 +54,7 @@ namespace MyCompany.Store.Application.Orders.Queries.GetAllOrders
 
             var recordsCount = await connection.ExecuteScalarAsync<int>(recordsCountSql);
 
-            return new QueryResult<IEnumerable<GetAllOrdersDto>> (ResponseStatus.Ok, orders, count: recordsCount);
+            return new QueryResult<IEnumerable<GetAllOrdersDto>> (orders, count: recordsCount);
         }
     }
 }

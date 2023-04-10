@@ -3,7 +3,6 @@ using Mediator.Queries;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails.Dtos;
 using MyCompany.Store.Application.Shared.Data;
-using MyCompany.Store.Application.Shared.Enums;
 using MyCompany.Store.Application.Shared.Queries;
 
 namespace MyCompany.Store.Application.Orders.Queries.GetOrderDetails
@@ -59,7 +58,7 @@ namespace MyCompany.Store.Application.Orders.Queries.GetOrderDetails
 
             var order = result.FirstOrDefault();
 
-            return new QueryResult<GetOrderDetailsDto>(ResponseStatus.Ok, payload: order);
+            return new QueryResult<GetOrderDetailsDto>(payload: order);
         }
     }
 }

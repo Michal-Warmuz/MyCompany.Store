@@ -8,9 +8,9 @@ namespace Mediator.Commands
 
         public CommandDispatcher(IServiceProvider serviceProvider) => _serviceProvider = serviceProvider;
 
-        public Task<TCommandResult> Dispatch<TCommand, TCommandResult>(TCommand command, CancellationToken cancellation) where TCommand : ICommand
+        public Task Dispatch<TCommand>(TCommand command, CancellationToken cancellation) where TCommand : ICommand
         {
-            var handler = _serviceProvider.GetRequiredService<ICommandHandler<TCommand, TCommandResult>>();
+            var handler = _serviceProvider.GetRequiredService<ICommandHandler<TCommand>>();
             return handler.Handle(command, cancellation);
         }
     }

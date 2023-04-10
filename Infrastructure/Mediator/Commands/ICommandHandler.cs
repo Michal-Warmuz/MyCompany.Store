@@ -1,7 +1,7 @@
 ﻿namespace Mediator.Commands
 {
-    public interface ICommandHandler<in TCommand, TCommandResul> where TCommand : ICommand
+    public interface ICommandHandler<in TCommand> where TCommand : ICommand
     {
-        Task<TCommandResul> Handle(TCommand command, CancellationToken cancellation);
+        Task Handle(TCommand command, CancellationToken cancellation);
     }
 }

@@ -1,15 +1,12 @@
 ﻿using FluentValidation;
 using Mediator.Commands;
-using MyCompany.Store.Application.Shared.Commands;
-using MyCompany.Store.Application.Shared.Enums;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
-using MyCompany.Store.Core.Domain.SeedWork;
 using MyCompany.Store.Infrastructure.Database.SeedWork;
 
 namespace MyCompany.Store.Application.Orders.Commands.EditOrder
 {
-    internal class EditOrderCommandHandler : ICommandHandler<EditOrderCommand, CommandResult>
+    internal class EditOrderCommandHandler : ICommandHandler<EditOrderCommand>
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IValidator<EditOrderCommand> _validator;
@@ -22,13 +19,15 @@ namespace MyCompany.Store.Application.Orders.Commands.EditOrder
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<CommandResult> Handle(EditOrderCommand command, CancellationToken cancellation)
+        public async Task Handle(EditOrderCommand command, CancellationToken cancellation)
         {
 
             var resultValidator = _validator.Validate(command);
 
             if (!resultValidator.IsValid)
-                return new CommandResult(ResponseStatus.ValidationErrors, string.Join(',', resultValidator.Errors));
+            {
+                throw new Exception($"Invalid: {string.Join(',', resultValidator.Errors)}");
+            }
 
             var order = await _orderRepository.GetAsync(new OrderId(command.OrderId));
 
@@ -49,24 +48,15 @@ namespace MyCompany.Store.Application.Orders.Commands.EditOrder
 
             if(status == null)
             {
-                return new CommandResult(ResponseStatus.ValidationErrors, "Error status");
+                throw new InvalidOperationException("Error Status");
             }
 
-            try
-            {
-                order.Edit(Information.CreateNew(command.AdditionalInfo), Client.CreateNew(command.ClientName), status);
-            }
-            catch(BusinessRuleValidationException ex)
-            {
-                return new CommandResult(ResponseStatus.ValidationErrors, ex.Message);
-            }
+            order.Edit(Information.CreateNew(command.AdditionalInfo), Client.CreateNew(command.ClientName), status);
 
 
             await _orderRepository.UpdateAsync(order);
 
             await _unitOfWork.CommitAsync();
-
-            return new CommandResult(ResponseStatus.Ok);
         }
     }
 }

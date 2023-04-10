@@ -9,7 +9,6 @@ using MyCompany.Store.Application.Orders.Queries.GetAllOrders;
 using MyCompany.Store.Application.Orders.Queries.GetAllOrders.Dtos;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails;
 using MyCompany.Store.Application.Orders.Queries.GetOrderDetails.Dtos;
-using MyCompany.Store.Application.Shared.Commands;
 using MyCompany.Store.Application.Shared.Queries;
 using MyCompany.Store.Core.Domain.Orders.Enums;
 using System.Net;
@@ -24,38 +23,45 @@ namespace MyCompany.Store.API.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(CommandResult), (int)HttpStatusCode.Created)]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
         {
-            return HandleServiceResult(await _commandDispatcher.Dispatch<CreateOrderCommand, CommandResult>(command, CancellationToken.None));
+            await _commandDispatcher.Dispatch(command, CancellationToken.None);
+
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         [HttpPut("{orderId}")]
-        [ProducesResponseType(typeof(CommandResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> EditOrder(long orderId, [FromBody] EditOrderCommand command)
         {
-            return HandleServiceResult(await _commandDispatcher.Dispatch<EditOrderCommand, CommandResult>(new EditOrderCommand(orderId, command.ClientName, command.AdditionalInfo, command.Status), CancellationToken.None));
+            await _commandDispatcher.Dispatch(new EditOrderCommand(orderId, command.ClientName, command.AdditionalInfo, command.Status), CancellationToken.None);
+
+            return Ok();
         }
 
         [HttpDelete("{orderId}")]
-        [ProducesResponseType(typeof(CommandResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> RemoveOrder(long orderId)
         {
-            return HandleServiceResult(await _commandDispatcher.Dispatch<RemoveOrderCommand, CommandResult>(new RemoveOrderCommand(orderId), CancellationToken.None));
+            await _commandDispatcher.Dispatch(new RemoveOrderCommand(orderId), CancellationToken.None);
+
+            return Ok();
         }
 
         [HttpGet("{orderId}")]
         [ProducesResponseType(typeof(QueryResult<GetOrderDetailsDto>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetOrderDetails(long orderId)
         {
-            return HandleServiceResult(await _queryDispatcher.Dispatch<GetOrderDetailsQuery, QueryResult<GetOrderDetailsDto>>(new GetOrderDetailsQuery(orderId), CancellationToken.None));
+            var result = await _queryDispatcher.Dispatch<GetOrderDetailsQuery, QueryResult<GetOrderDetailsDto>>(new GetOrderDetailsQuery(orderId), CancellationToken.None);
+
+            return Ok(result);
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(QueryResult<IEnumerable<GetAllOrdersDto>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAllOrders(int page, int perPage, DateOnly? createdDate, OrderStatus? status)
         {
-            return HandleServiceResult(await _queryDispatcher.Dispatch<GetAllOrdersQuery, QueryResult<IEnumerable<GetAllOrdersDto>>>(new GetAllOrdersQuery(page, perPage, createdDate, status), CancellationToken.None));
+            var result = await _queryDispatcher.Dispatch<GetAllOrdersQuery, QueryResult<IEnumerable<GetAllOrdersDto>>>(new GetAllOrdersQuery(page, perPage, createdDate, status), CancellationToken.None);
+
+            return Ok(result);
         }
     }
 }

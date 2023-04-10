@@ -1,20 +1,14 @@
-﻿using MyCompany.Store.Application.Shared.Base;
-using MyCompany.Store.Application.Shared.Enums;
-
-namespace MyCompany.Store.Application.Shared.Queries
+﻿namespace MyCompany.Store.Application.Shared.Queries
 {
-    public class QueryResult<T> : BaseApiResult
+    public record QueryResult<T>
     {
-        public T? Payload { get; set; }
-        public string? Error { get; set; }
-        public int Count { get; set; }
+        public T? Payload { get; init; }
+        public int Count { get; init; }
 
 
-        public QueryResult(ResponseStatus resultCode, T? payload = default(T), string? error = null, int count = 0) : base(resultCode)
+        public QueryResult(T? payload = default(T), int count = 0)
         {
-            ResultCode = resultCode;
             Payload = payload;
-            Error = error;
             Count = count;
         }
     }
