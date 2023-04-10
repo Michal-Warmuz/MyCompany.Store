@@ -1,7 +1,7 @@
 using Autofac;
-using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using Mediator;
+using MyCompany.Store.API.Middlewares;
 using MyCompany.Store.Application.Orders;
 using MyCompany.Store.Infrastructure.Database;
 using Newtonsoft.Json.Converters;
@@ -45,6 +45,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("Policy");
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

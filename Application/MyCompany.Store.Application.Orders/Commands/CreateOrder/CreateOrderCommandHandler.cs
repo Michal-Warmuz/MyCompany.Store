@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Mediator.Commands;
+using MyCompany.Store.Application.Shared.Exceptions;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
 using MyCompany.Store.Infrastructure.Database.SeedWork;
@@ -25,9 +26,7 @@ namespace MyCompany.Store.Application.Orders.Commands.CreateOrder
             var resultValidator = _validator.Validate(command);
 
             if (!resultValidator.IsValid)
-            {
-                throw new InvalidOperationException($"Invalid: {string.Join(',', resultValidator.Errors)}");
-            }
+                throw new InvalidCommandException($"Invalid: {string.Join(',', resultValidator.Errors)}");
 
             var order = Order.CreateNew(Information.CreateNew(command.AdditionalInfo), Client.CreateNew(command.ClientName));
 

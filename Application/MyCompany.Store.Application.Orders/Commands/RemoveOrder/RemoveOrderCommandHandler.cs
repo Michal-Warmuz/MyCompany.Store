@@ -1,4 +1,5 @@
 ﻿using Mediator.Commands;
+using MyCompany.Store.Application.Shared.Exceptions;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
 
@@ -18,9 +19,7 @@ namespace MyCompany.Store.Application.Orders.Commands.RemoveOrder
             var order = await _orderRepository.GetAsync(new OrderId(command.OrderId));
 
             if(order == null)
-            {
-                throw new InvalidOperationException($"Order not found");
-            }
+                throw new InvalidCommandException($"Order not found");
 
             order.Remove();
 

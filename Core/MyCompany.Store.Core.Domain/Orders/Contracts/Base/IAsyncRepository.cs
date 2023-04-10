@@ -1,4 +1,4 @@
-﻿namespace MyCompany.Store.Core.Domain.Orders.Contracts
+﻿namespace MyCompany.Store.Core.Domain.Orders.Contracts.Base
 {
     public interface IAsyncRepository<TEntity, TEntityId>
     {

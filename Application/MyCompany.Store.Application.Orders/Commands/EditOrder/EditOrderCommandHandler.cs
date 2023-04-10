@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Mediator.Commands;
+using MyCompany.Store.Application.Shared.Exceptions;
 using MyCompany.Store.Core.Domain.Orders;
 using MyCompany.Store.Core.Domain.Orders.Contracts;
 using MyCompany.Store.Infrastructure.Database.SeedWork;
@@ -25,9 +26,7 @@ namespace MyCompany.Store.Application.Orders.Commands.EditOrder
             var resultValidator = _validator.Validate(command);
 
             if (!resultValidator.IsValid)
-            {
-                throw new Exception($"Invalid: {string.Join(',', resultValidator.Errors)}");
-            }
+                throw new InvalidCommandException($"Invalid: {string.Join(',', resultValidator.Errors)}");
 
             var order = await _orderRepository.GetAsync(new OrderId(command.OrderId));
 
@@ -47,9 +46,7 @@ namespace MyCompany.Store.Application.Orders.Commands.EditOrder
             OrderStatus? status = OrderStatus.GetOrderStatus(command.Status);
 
             if(status == null)
-            {
-                throw new InvalidOperationException("Error Status");
-            }
+                throw new InvalidCommandException("Error Status");
 
             order.Edit(Information.CreateNew(command.AdditionalInfo), Client.CreateNew(command.ClientName), status);
 
